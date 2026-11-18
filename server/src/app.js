@@ -16,7 +16,11 @@ const app = express()
 app.set('trust proxy', 1)
 
 // ── SECURITY ──
-app.use(helmet())
+app.use(helmet({
+  // COOP is set by the frontend's Vercel config (same-origin-allow-popups)
+  // so Google Identity Services can use postMessage. The API doesn't need it.
+  crossOriginOpenerPolicy: false,
+}))
 
 // ── CORS ──
 // CLIENT_URL may be a comma-separated list (production domain, preview URLs, etc.)

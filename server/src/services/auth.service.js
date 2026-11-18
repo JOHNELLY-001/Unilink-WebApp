@@ -40,8 +40,19 @@ export function setAuthCookies(res, accessToken, refreshToken) {
 }
 
 export function clearAuthCookies(res) {
-  res.clearCookie('access_token')
-  res.clearCookie('refresh_token')
+  const isProd = env.NODE_ENV === 'production'
+  // Must match the attributes used when setting the cookies,
+  // otherwise browsers won't remove them (esp. cross-site in production).
+  res.clearCookie('access_token', {
+    httpOnly: true,
+    secure:   isProd,
+    sameSite: isProd ? 'none' : 'lax',
+  })
+  res.clearCookie('refresh_token', {
+    httpOnly: true,
+    secure:   isProd,
+    sameSite: isProd ? 'none' : 'lax',
+  })
 }
 
 // ── REFRESH TOKEN STORAGE ──
@@ -84,8 +95,15 @@ export async function comparePassword(password, hash) {
 
 // ── GOOGLE TOKEN VERIFICATION ──
 export async function verifyGoogleToken(idToken) {
-  const ticket  = await googleClient.verifyIdToken({ idToken, audience: env.GOOGLE_CLIENT_ID })
-  const payload = ticket.getPayload()
+  let payload
+  try {
+    const ticket  = await googleClient.verifyIdToken({ idToken, audience: env.GOOGLE_CLIENT_ID })
+    payload = ticket.getPayload()
+  } catch (err) {
+    const e = new Error('Invalid or expired Google token.')
+    e.statusCode = 401
+    throw e
+  }
   return {
     googleId:  payload.sub,
     email:     payload.email,

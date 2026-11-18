@@ -19,8 +19,14 @@ app.set('trust proxy', 1)
 app.use(helmet())
 
 // ── CORS ──
+// CLIENT_URL may be a comma-separated list (production domain, preview URLs, etc.)
+const allowedOrigins = env.CLIENT_URL
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean)
+
 app.use(cors({
-  origin:         env.CLIENT_URL,
+  origin: allowedOrigins,
   credentials:    true,
   methods:        ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],

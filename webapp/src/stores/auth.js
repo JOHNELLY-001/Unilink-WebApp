@@ -21,6 +21,11 @@ export const useAuthStore = defineStore('auth', () => {
   // so we don't hammer /auth/me on every navigation when logged out.
   const sessionRestoreAttempted = ref(false)
 
+  // Google sign-in started on the login page but the account is new —
+  // the ID token is kept here (in memory only) until the register page
+  // collects a role and completes the sign-up.
+  const pendingGoogleToken = ref(null)
+
   // Called by the axios interceptor when the refresh token is also invalid —
   // the session is truly over, so clear the user (next nav redirects to login).
   setSessionExpiredHandler(() => {
@@ -50,6 +55,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(credentials) {
     loading.value = true
     error.value   = null
+    pendingGoogleToken.value = null
     try {
       const data = await apiLogin(credentials)
       user.value  = data.user
@@ -65,6 +71,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function register(payload) {
     loading.value = true
     error.value   = null
+    pendingGoogleToken.value = null
     try {
       const data = await apiRegister(payload)
       user.value  = data.user
@@ -80,13 +87,20 @@ export const useAuthStore = defineStore('auth', () => {
   async function loginWithGoogle(idToken, roleIfNew) {
     loading.value = true
     error.value   = null
+    pendingGoogleToken.value = null
     try {
       const data = await apiGoogleLogin({ idToken, role: roleIfNew })
       user.value  = data.user
       return { success: true }
     } catch (err) {
-      error.value = err?.response?.data?.message || 'Google sign-in failed.'
-      return { success: false, error: error.value }
+      const msg = err?.response?.data?.message || 'Google sign-in failed.'
+      // New Google user signing in from the login page — the backend requires
+      // a role. Keep the token so the register page can finish the sign-up.
+      if (err?.response?.status === 400 && /role/i.test(msg)) {
+        pendingGoogleToken.value = idToken
+      }
+      error.value = msg
+      return { success: false, error: msg }
     } finally {
       loading.value = false
     }
@@ -98,6 +112,7 @@ export const useAuthStore = defineStore('auth', () => {
       await apiLogout()
     } finally {
       user.value = null
+      pendingGoogleToken.value = null
       sessionRestoreAttempted.value = true   // session is gone; don't re-restore
       loading.value = false
     }
@@ -158,6 +173,7 @@ export const useAuthStore = defineStore('auth', () => {
     user, loading, error,
     isAuthenticated, role, isStudent, isMentor, isAdmin,
     onboardingComplete, pendingApproval, fullName, initials,
+    pendingGoogleToken,
     login, register, loginWithGoogle, logout,
     restoreSession, finishStudentOnboarding, finishMentorOnboarding,
     clearError,

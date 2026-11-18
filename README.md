@@ -72,6 +72,22 @@ npm run dev                 # Vite on http://localhost:5173
 - Refresh tokens are SHA-256 hashed in the `refresh_tokens` table and rotated on use
 - Google Sign-In issues the same cookie pair
 
+### Google Sign-In setup (keys required)
+
+1. In [Google Cloud Console](https://console.cloud.google.com):
+   - Configure the **OAuth consent screen** (External, app name, support email)
+   - Create **Credentials → OAuth 2.0 Client ID → Web application**
+   - Under **Authorized JavaScript origins** add:
+     - `http://localhost:5173` (dev)
+     - Your deployed frontend URL, e.g. `https://unilink.vercel.app` (prod)
+   - No redirect URI is needed — the app uses Google Identity Services (ID token flow)
+2. Copy the same **Client ID** to both:
+   - `server/.env` → `GOOGLE_CLIENT_ID` (backend verifies the token's audience against it)
+   - `webapp/.env` → `VITE_GOOGLE_CLIENT_ID` (frontend renders the Google button)
+3. No client secret is required — the flow sends only the verified ID token.
+4. Restart both dev servers after editing `.env` files.
+
+
 ## Roles
 
 - **student** — careers, mentors, opportunities, progress, community

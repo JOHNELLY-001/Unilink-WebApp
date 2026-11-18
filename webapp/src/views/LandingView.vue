@@ -3,6 +3,16 @@
 
     <!-- HERO -->
     <section class="hero">
+      <div class="hero-slideshow" aria-hidden="true">
+        <Transition name="hero-fade" mode="out-in">
+          <img
+            :key="currentHeroImage"
+            class="hero-slide"
+            :src="heroImages[currentHeroImage]"
+            alt=""
+          >
+        </Transition>
+      </div>
       <div class="hero-inner">
         <h1 class="hero-h">
           Your path from <span class="hero-accent">classroom</span>
@@ -189,6 +199,33 @@
 </template>
 
 <script setup>
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+
+const heroImages = [
+'https://res.cloudinary.com/dwlj3fcc5/image/upload/v1794992794/unilink3_ltcgak.jpg',
+  'https://res.cloudinary.com/dwlj3fcc5/image/upload/v1794992794/unilink1_nsetwr.jpg',
+  'https://res.cloudinary.com/dwlj3fcc5/image/upload/v1794992795/unilink_ssdxh7.jpg',
+  'https://res.cloudinary.com/dwlj3fcc5/image/upload/v1794992794/unilink2_l2owgy.jpg'
+]
+
+const currentHeroImage = ref(0)
+let heroImageTimer
+
+onMounted(() => {
+  heroImageTimer = window.setInterval(() => {
+    currentHeroImage.value = (currentHeroImage.value + 1) % heroImages.length
+  }, 5000)
+
+  heroImages.forEach((src) => {
+    const image = new Image()
+    image.src = src
+  })
+})
+
+onBeforeUnmount(() => {
+  window.clearInterval(heroImageTimer)
+})
+
 const heroStats = [
   { value: '2,400+', label: 'Students' },
   { value: '180+',   label: 'Mentors' },
@@ -286,16 +323,37 @@ const communityPosts = [
 
 /* ── HERO ── */
 .hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: flex;
   align-items: center;
   gap: 48px;
-  padding: 64px 40px;
-  max-width: 1100px;
+  width: 100%;
+  padding: 64px max(40px, calc((100% - 1020px) / 2));
   margin: 0 auto;
-  min-height: 520px;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
-.hero-inner { flex: 1; }
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 255, 255, 0.82) 46%, rgba(255, 255, 255, 0.52) 72%, rgba(255, 255, 255, 0.38) 100%);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  pointer-events: none;
+}
+
+.hero-inner {
+  flex: 1;
+  position: relative;
+  z-index: 2;
+  max-width: 520px;
+}
 
 .hero-badge {
   display: inline-block;
@@ -343,8 +401,39 @@ const communityPosts = [
 .hero-visual {
   flex: 1;
   position: relative;
-  min-height: 320px;
+  z-index: 2;
+  min-height: 380px;
   max-width: 400px;
+}
+
+.hero-slideshow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: var(--page);
+}
+
+.hero-slide {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.hero-fade-enter-active,
+.hero-fade-leave-active {
+  transition: opacity 900ms ease, transform 1100ms ease;
+}
+
+.hero-fade-enter-from {
+  opacity: 0;
+  transform: scale(1.035);
+}
+
+.hero-fade-leave-to {
+  opacity: 0;
+  transform: scale(1.015);
 }
 
 .hv-card {
@@ -357,6 +446,7 @@ const communityPosts = [
   gap: 10px;
   box-shadow: var(--shadow-lg);
   position: absolute;
+  z-index: 3;
 }
 
 .hv-av {
@@ -585,5 +675,12 @@ const communityPosts = [
   .mentors-grid { grid-template-columns: repeat(2, 1fr); }
   .opp-visual { grid-template-columns: 1fr 1fr; }
   .section-inner { padding: 0 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-fade-enter-active,
+  .hero-fade-leave-active {
+    transition: none;
+  }
 }
 </style>

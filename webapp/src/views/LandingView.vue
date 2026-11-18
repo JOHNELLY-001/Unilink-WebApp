@@ -4,13 +4,12 @@
     <!-- HERO -->
     <section class="hero">
       <div class="hero-inner">
-        <div class="hero-badge">🇹🇿 Built for Tanzanian Students</div>
         <h1 class="hero-h">
           Your path from <span class="hero-accent">classroom</span>
           <br>to <span class="hero-accent">career</span> starts here.
         </h1>
         <p class="hero-sub">
-          UniLink connects Form 5 and 6 students with mentors, career guidance,
+          UniLink connects Advenced level secondary school students with mentors, career guidance,
           university pathways, and opportunities — all in one platform.
         </p>
         <div class="hero-cta">

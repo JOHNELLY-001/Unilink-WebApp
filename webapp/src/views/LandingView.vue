@@ -10,7 +10,7 @@
         </h1>
         <p class="hero-sub">
           UniLink connects Advenced level secondary school students with mentors, career guidance,
-          university pathways, and opportunities — all in one platform.
+          university pathways, and opportunities all in one platform.
         </p>
         <div class="hero-cta">
           <RouterLink to="/register" class="ba hero-btn-main">Get Started Free</RouterLink>

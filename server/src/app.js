@@ -20,10 +20,13 @@ app.use(helmet())
 
 // ── CORS ──
 // CLIENT_URL may be a comma-separated list (production domain, preview URLs, etc.)
+// Trailing slashes are stripped — CORS origin matching is exact-string.
 const allowedOrigins = env.CLIENT_URL
   .split(',')
-  .map((s) => s.trim())
+  .map((s) => s.trim().replace(/\/+$/, ''))
   .filter(Boolean)
+
+console.log('[CORS] Allowed origins:', allowedOrigins)
 
 app.use(cors({
   origin: allowedOrigins,

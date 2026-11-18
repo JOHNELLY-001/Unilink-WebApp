@@ -1,7 +1,15 @@
 import axios from 'axios'
 
+// In production, default to the relative /api/v1 path so requests go through
+// the Vercel rewrite proxy (same-origin) — this keeps auth cookies first-party
+// and avoids cross-site cookie blocking by browsers.
+// In development, default to the local backend.
+const defaultBase = import.meta.env.PROD
+  ? '/api/v1'
+  : 'http://localhost:5000/api/v1'
+
 const api = axios.create({
-  baseURL:         import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1',
+  baseURL:         import.meta.env.VITE_API_BASE_URL || defaultBase,
   timeout:         15000,
   withCredentials: true,
   headers: {
